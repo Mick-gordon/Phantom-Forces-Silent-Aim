@@ -3,7 +3,7 @@
 
 repeat task.wait() until game:IsLoaded() and game.GameId ~= 0; -- Makes Sure The Game Is Loaded.
 
-if not hookfunction or not newcclosure and not queue_on_teleport then -- Check If The Executor Is Supported
+if not newcclosure and not getgc then -- Check If The Executor Is Supported
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
@@ -74,7 +74,7 @@ end;
 do
     xpcall(function()
         -- BulletObject.new
-        local OldBulletObject_new; OldBulletObject_new = hookfunction(Modules.BulletObject.new, newcclosure(function(...) -- Hooks The Function. No Way.
+        local OldBulletObject_new = Modules.BulletObject.new; Modules.BulletObject.new = newcclosure(function(...) -- Hooks The Function. No Way.
             local Args = {...}; -- No Need For This As It Is A Table Already.
             local HitPart = Functions:GetClosestToMouse(); -- Gets The Closest To The Mouse.
             
@@ -83,10 +83,10 @@ do
             end;
             
             return OldBulletObject_new(table.unpack(Args)); -- Send The Table Back 
-        end));
+        end);
         
         -- NetworkClient.send
-        local OldNetwork_send;OldNetwork_send = hookfunction(Modules.NetworkClient.send, newcclosure(function(Idk, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
+        local OldNetwork_send = Modules.NetworkClient.send; Modules.NetworkClient.send = newcclosure(function(Idk, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
     		local Args = {...};
     
     		if Name == "newbullets" and SilentAim.Enabled then -- Checks If It Sending newbullets
@@ -103,7 +103,7 @@ do
     		end;
     
     		return OldNetwork_send(Idk, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
-        end));
+        end);
     end,function()
         LocalPlayer:Kick('Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True" Or Was Not Able To Find Modules Or Silent Aim Has A Error.')
     end);
