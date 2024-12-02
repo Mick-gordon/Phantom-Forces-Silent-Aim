@@ -4,7 +4,7 @@ if not setfflag or not getfflag or not hookfunction or not newcclosure and not q
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
-if getfflag("DebugRunParallelLuaOnMainThread") ~= true then -- Check If They Have This Fflag
+if string.lower(getfflag("DebugRunParallelLuaOnMainThread")) ~= "true" then -- Check If They Have This Fflag
     setfflag("DebugRunParallelLuaOnMainThread", "True"); -- Phantom Forces Basicaly Runs The Game On A Actor And Using "DebugRunParallelLuaOnMainThread" Will Bypass That And I Will Not Need To Use run_on_actor or run_on_thread.
     queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/Main.lua", true)); -- When The Player TP It Will Load The Script Again.
     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId); -- Rejoin The Game 
