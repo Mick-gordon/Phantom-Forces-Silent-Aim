@@ -6,7 +6,7 @@ end;
 
 if string.lower(getfflag("DebugRunParallelLuaOnMainThread")) ~= "true" then
     setfflag("DebugRunParallelLuaOnMainThread", "True");
-    queue_on_teleport(loadstring(game:HpptGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/Main", true))());
+    queue_on_teleport(loadstring(game:HpptGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/Main.lua", true))());
     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 end;
 
