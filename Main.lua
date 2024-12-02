@@ -4,10 +4,12 @@ if not setfflag or not getfflag or not hookfunction or not newcclosure and not q
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
-if string.lower(getfflag("DebugRunParallelLuaOnMainThread")) ~= "true" then -- Check If They Have This Fflag
+if getfflag("DebugRunParallelLuaOnMainThread") ~= true then -- Check If They Have This Fflag
     setfflag("DebugRunParallelLuaOnMainThread", "True"); -- Phantom Forces Basicaly Runs The Game On A Actor And Using "DebugRunParallelLuaOnMainThread" Will Bypass That And I Will Not Need To Use run_on_actor or run_on_thread.
-    queue_on_teleport(loadstring(game:HpptGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/Main.lua", true))()); -- When The Player TP It Will Load The Script Again.
+    queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/Main.lua", true)); -- When The Player TP It Will Load The Script Again.
     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId); -- Rejoin The Game 
+   
+    wait(4)
 end;
 
 -- // Variables
@@ -73,37 +75,39 @@ end;
 
 -- // Hooks
 do
-    -- BulletObject.new
-    local OldBulletObject_new; OldBulletObject_new = hookfunction(Modules.BulletObject.new, newcclosure(function(...) -- Hooks The Function. No Way.
-        local Args = {...}; -- No Need For This As It Is A Table Already.
-        local HitPart = Functions:GetClosestToMouse(); -- Gets The Closest To The Mouse.
+    pcall(function()
+        -- BulletObject.new
+        local OldBulletObject_new; OldBulletObject_new = hookfunction(Modules.BulletObject.new, newcclosure(function(...) -- Hooks The Function. No Way.
+            local Args = {...}; -- No Need For This As It Is A Table Already.
+            local HitPart = Functions:GetClosestToMouse(); -- Gets The Closest To The Mouse.
+            
+            if HitPart and Args[1]["extra"] and SilentAim.Enabled then -- Check If We Have A Target, If Silent Aim Is Enabled And It Is The Local Player Sending The Bullet.
+                Args[1]["velocity"] = (HitPart.Position - Args[1]["position"]).unit * Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"); -- LookVector * MuzzleVelocity (This Dose Not Account For Bullet Drop!).
+            end;
+            
+            return OldBulletObject_new(table.unpack(Args)); -- Send The Table Back 
+        end));
         
-        if HitPart and Args[1]["extra"] and SilentAim.Enabled then -- Check If We Have A Target, If Silent Aim Is Enabled And It Is The Local Player Sending The Bullet.
-            Args[1]["velocity"] = (HitPart.Position - Args[1]["position"]).unit * Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"); -- LookVector * MuzzleVelocity (This Dose Not Account For Bullet Drop!).
-        end;
-        
-        return OldBulletObject_new(table.unpack(Args)); -- Send The Table Back 
-    end));
+        -- NetworkClient.send
+        local OldNetwork_send;OldNetwork_send = hookfunction(Modules.NetworkClient.send, newcclosure(function(Idk, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
+    		local Args = {...};
     
-    -- NetworkClient.send
-    local OldNetwork_send;OldNetwork_send = hookfunction(Modules.NetworkClient.send, newcclosure(function(Idk, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
-		local Args = {...};
-
-		if Name == "newbullets" and SilentAim.Enabled then -- Checks If It Sending newbullets
-			local UniqueId, BulletData, Time = ...; -- Unpacked The Args To Make More Sense (From R6).
-
-			for i,v in next, BulletData["bullets"] do -- For Each Bullet Change
-				local HitPart = Functions:GetClosestToMouse();
-				if HitPart then
-					v[1] = (HitPart.Position - BulletData["firepos"]).unit;-- LookVector (This Dose Not Account For Bullet Drop!). Args[1] Is The LookVector.
-				end;
-			end;
-
-			return OldNetwork_send(Idk, Name, UniqueId, BulletData, Time); -- Return The Modified Args.
-		end;
-
-		return OldNetwork_send(Idk, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
-    end));
+    		if Name == "newbullets" and SilentAim.Enabled then -- Checks If It Sending newbullets
+    			local UniqueId, BulletData, Time = ...; -- Unpacked The Args To Make More Sense (From R6).
+    
+    			for i,v in next, BulletData["bullets"] do -- For Each Bullet Change
+    				local HitPart = Functions:GetClosestToMouse();
+    				if HitPart then
+    					v[1] = (HitPart.Position - BulletData["firepos"]).unit;-- LookVector (This Dose Not Account For Bullet Drop!). Args[1] Is The LookVector.
+    				end;
+    			end;
+    
+    			return OldNetwork_send(Idk, Name, UniqueId, BulletData, Time); -- Return The Modified Args.
+    		end;
+    
+    		return OldNetwork_send(Idk, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
+        end));
+    end);
 
 end;
 
