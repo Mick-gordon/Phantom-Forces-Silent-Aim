@@ -49,7 +49,7 @@ do
 		local Closest, HitPart = SilentAim.Fov, nil;
 
 		Modules.ReplicationInterface.operateOnAllEntries(function(Player, Entry)
-			if Player ~= LocalPlayer and Modules.ReplicationInterface.getEntry(Player) then
+			if Player ~= LocalPlayer then
 				if Entry._alive and Player.Team ~= LocalPlayer.Team and Entry._thirdPersonObject and Entry._thirdPersonObject._characterModelHash then -- Check If They Are Alive And Have A Character
 					
 					
