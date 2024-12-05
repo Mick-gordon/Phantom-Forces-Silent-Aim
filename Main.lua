@@ -40,6 +40,7 @@ do
     
 end;
 
+
 -- // Functions
 local Functions = { };
 do
@@ -47,12 +48,14 @@ do
     function Functions:GetClosestToMouse() -- Quick Little Get Closest To Mouse Function Nothing Special.
 		local Closest, HitPart = SilentAim.Fov, nil;
 
-		for _,Player in pairs(Players:GetChildren()) do
+		Modules.ReplicationInterface.operateOnAllEntries(function(Player, Entry)
 			if Player ~= LocalPlayer and Modules.ReplicationInterface.getEntry(Player) then
-				local Entry = Modules.ReplicationInterface.getEntry(Player); -- Gets The Entry Where It Contains All Of The Player Information
-				if Entry._alive and Player.Team ~= LocalPlayer.Team and Entry._thirdPersonObject and Entry._thirdPersonObject._characterHash then -- Check If They Are Alive And Have A Character
-					local HitBox = Entry._thirdPersonObject._characterHash[SilentAim.HitScan];
+				if Entry._alive and Player.Team ~= LocalPlayer.Team and Entry._thirdPersonObject and Entry._thirdPersonObject._characterModelHash then -- Check If They Are Alive And Have A Character
+					
+					
+					local HitBox = Entry._thirdPersonObject._characterModelHash[SilentAim.HitScan];
 					if HitBox then
+					    
 						local ScreenPosition, OnScreen = CurrentCamera:WorldToScreenPoint(HitBox.Position); -- 3D To 2D
 						local Magnitude = (UserInputService:GetMouseLocation() - Vector2.new(ScreenPosition.X, ScreenPosition.Y)).Magnitude; -- The Distance Between Mouse And Player 2D Position.
 						if OnScreen and Magnitude < Closest then
@@ -62,7 +65,7 @@ do
 					end;
 				end;
 			end;
-		end;
+		end);
 
 		return HitPart;
 	end;
@@ -77,7 +80,7 @@ do
         local OldBulletObject_new = Modules.BulletObject.new; Modules.BulletObject.new = newcclosure(function(...) -- Hooks The Function. No Way.
             local Args = {...}; -- No Need For This As It Is A Table Already.
             local HitPart = Functions:GetClosestToMouse(); -- Gets The Closest To The Mouse.
-            
+           
             if HitPart and Args[1]["extra"] and SilentAim.Enabled then -- Check If We Have A Target, If Silent Aim Is Enabled And It Is The Local Player Sending The Bullet.
                 Args[1]["velocity"] = (HitPart.Position - Args[1]["position"]).unit * Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"); -- LookVector * MuzzleVelocity (This Dose Not Account For Bullet Drop!).
             end;
@@ -98,10 +101,10 @@ do
     					v[1] = (HitPart.Position - BulletData["firepos"]).unit;-- LookVector (This Dose Not Account For Bullet Drop!). Args[1] Is The LookVector.
     				end;
     			end;
-    
+                
     			return OldNetwork_send(Idk, Name, UniqueId, BulletData, Time); -- Return The Modified Args.
     		end;
-    
+            
     		return OldNetwork_send(Idk, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
         end);
     end,function()
