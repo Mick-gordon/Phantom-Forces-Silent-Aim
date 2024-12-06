@@ -3,7 +3,7 @@
 
 repeat task.wait() until game:IsLoaded() and game.GameId ~= 0; -- Makes Sure The Game Is Loaded.
 
-if not newcclosure and not getgc then -- Check If The Executor Is Supported
+if not newcclosure or not getgc then -- Check If The Executor Is Supported
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
