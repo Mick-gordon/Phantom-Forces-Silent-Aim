@@ -58,7 +58,7 @@ do
 					local HitBox = Entry._thirdPersonObject._characterModelHash[SilentAim.HitScan];
 					if HitBox then
 					    
-						local ScreenPosition, OnScreen = CurrentCamera:WorldToScreenPoint(HitBox.Position); -- 3D To 2D
+						local ScreenPosition, OnScreen = CurrentCamera:WorldToViewportPoint(HitBox.Position); -- 3D To 2D
 						local Magnitude = (UserInputService:GetMouseLocation() - Vector2.new(ScreenPosition.X, ScreenPosition.Y)).Magnitude; -- The Distance Between Mouse And Player 2D Position.
 						if OnScreen and Magnitude < Closest then
 							Closest = Magnitude;
