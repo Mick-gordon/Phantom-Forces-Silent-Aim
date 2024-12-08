@@ -19,7 +19,9 @@ local SilentAim = { -- I Haven't Added WallCheck On This One So The Skids Will H
     Enabled = false,
     Fov = 600,
     ShowFov = false,
-    HitScan = "Head"
+    HitScan = "Head",
+    --
+    BulletDrop = 0
 };
 
 -- // Modules 
@@ -68,7 +70,15 @@ do
 		end);
 
 		return HitPart;
-	end;
+    end;
+
+    function Functions:CalCulateBulletDrop(To, From, MuzzleVelovity) -- I Have Added This As I Am Very Lazy On DELETEMOB V3(Sorry).
+        local Distance = (To - From).Magnitude;
+        local Time = Distance / MuzzleVelovity;
+        local Vertical = 0.5 * Vector3.new(0, -196.1999969482422, 0) * Time^2; -- Gravity Can Be Found In PublicSettings Named As bulletAcceleration.
+        
+        SilentAim.BulletDrop = Vertical; -- So I Don't Need To Make A Get BulletSpeed Function For Network.
+    end;
     
 end;
 
@@ -82,14 +92,16 @@ do
             local HitPart = Functions:GetClosestToMouse(); -- Gets The Closest To The Mouse.
            
             if HitPart and Args[1]["extra"] and SilentAim.Enabled then -- Check If We Have A Target, If Silent Aim Is Enabled And It Is The Local Player Sending The Bullet.
-                Args[1]["velocity"] = (HitPart.Position - Args[1]["position"]).unit * Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"); -- LookVector * MuzzleVelocity (This Dose Not Account For Bullet Drop!).
+                Functions:CalCulateBulletDrop(HitPart.Position, Args[1]["position"], Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"));
+                
+                Args[1]["velocity"] = (HitPart.Position - SilentAim.BulletDrop - Args[1]["position"]).unit * Args[1]["extra"]["firearmObject"]:getWeaponStat("bulletspeed"); -- LookVector * MuzzleVelocity.
             end;
             
             return OldBulletObject_new(table.unpack(Args)); -- Send The Table Back 
         end);
         
         -- NetworkClient.send
-        local OldNetwork_send = Modules.NetworkClient.send; Modules.NetworkClient.send = newcclosure(function(Idk, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
+        local OldNetwork_send = Modules.NetworkClient.send; Modules.NetworkClient.send = newcclosure(function(Self, Name, ...) -- Wait No Way It Hooks The Function Like hookfunction From The Functions In The Executor From hookfunction. 
     		local Args = {...};
     
     		if Name == "newbullets" and SilentAim.Enabled then -- Checks If It Sending newbullets
@@ -98,17 +110,17 @@ do
     			for i,v in next, BulletData["bullets"] do -- For Each Bullet Change
     				local HitPart = Functions:GetClosestToMouse();
     				if HitPart then
-    					v[1] = (HitPart.Position - BulletData["firepos"]).unit;-- LookVector (This Dose Not Account For Bullet Drop!). Args[1] Is The LookVector.
+    					v[1] = (HitPart.Position - SilentAim.BulletDrop - BulletData["firepos"]).unit;--v[1] Is The LookVector.
     				end;
     			end;
                 
-    			return OldNetwork_send(Idk, Name, UniqueId, BulletData, Time); -- Return The Modified Args.
+    			return OldNetwork_send(Self, Name, UniqueId, BulletData, Time); -- Return The Modified Args.
     		end;
             
-    		return OldNetwork_send(Idk, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
+    		return OldNetwork_send(Self, Name, ...); -- Return The Non Modified Args From The Other Shitty Things.
         end);
     end,function()
-        LocalPlayer:Kick('Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True" Or Was Not Able To Find Modules Or Silent Aim Has A Error.')
+        LocalPlayer:Kick('Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True" Or Was Not Able To Find Modules.')
     end);
 
 end;
