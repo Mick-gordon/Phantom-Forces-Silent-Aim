@@ -1,7 +1,7 @@
 -- To Make This Work Open Blox Trap. Go In "Engine Settings" Scroll To The Bottom And Click On "Fast Flag Editor". 
 -- Click On "+ Add new" Then For The Name Put "FFlagDebugRunParallelLuaOnMainThread" Then For Value Do "True".
 
-if not debug.setstack or not debug.getstack or not getgc then -- Check If The Executor Is Supported 
+if not debug.getupvalue or not debug.setstack or not debug.getstack or not getgc then -- Check If The Executor Is Supported 
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
@@ -33,7 +33,7 @@ do
 
     local Cache;
     xpcall(function()
-        Cache = getupvalue(Shared.require, 1)._cache;
+        Cache = debug.getupvalue(Shared.require, 1)._cache;
     end, function()
         LocalPlayer:Kick('Make Sure The Game Is Loaded Or Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True".');
     end)
