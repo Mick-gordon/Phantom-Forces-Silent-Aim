@@ -166,14 +166,14 @@ do
     do
 
         local Fov   = Drawing.new("Circle"); -- Simple Fov;
-        Fov.Fill    = false;
-        Fov.Corners = 1000;
+        Fov.Filled    = false;
+        Fov.NumSides = 1000;
         Fov.Color   = Color3.fromRGB(255, 255 ,255);
         Fov.Thickness = 1;
         Fov.Transparency = 1;
         RunService.Heartbeat:Connect(function() -- Loop To Change The Mouse Position And Size.
 
-            if not (FovSizeText.Text == "") then
+            if not FovSizeText.Text == "" and tonumber(FovSizeText.Text) ~= nil then
                 SilentAim.Fov = tonumber(FovSizeText.Text);
             end;
 
