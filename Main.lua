@@ -1,7 +1,7 @@
 -- To Make This Work Open Blox Trap. Go In "Engine Settings" Scroll To The Bottom And Click On "Fast Flag Editor". 
 -- Click On "+ Add new" Then For The Name Put "FFlagDebugRunParallelLuaOnMainThread" Then For Value Do "True".
 
-if not debug.getupvalue or not debug.setstack or not debug.getstack or not getgc then -- Check If The Executor Is Supported 
+if not debug.getupvalues or not debug.setstack or not debug.getstack or not getgc then -- Check If The Executor Is Supported 
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
