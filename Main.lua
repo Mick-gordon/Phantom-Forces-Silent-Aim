@@ -173,7 +173,7 @@ do
         Fov.Transparency = 1;
         RunService.Heartbeat:Connect(function() -- Loop To Change The Mouse Position And Size.
 
-            if not FovSizeText.Text == "" and tonumber(FovSizeText.Text) ~= nil then
+            if FovSizeText.Text ~= "" and tonumber(FovSizeText.Text) ~= nil then
                 SilentAim.Fov = tonumber(FovSizeText.Text);
             end;
 
