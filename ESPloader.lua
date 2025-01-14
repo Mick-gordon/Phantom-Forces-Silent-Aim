@@ -1,3 +1,4 @@
+-- I Made This Open Source For People To Learn Off.
 if not getgc or not getupvalue then  -- Checks If The Executor Has The Required Functions For The Script.
 	game:GetService("Players").localPlayer:kick("Executor Not Supported"); -- Kicks The Player If Not.
 end;
@@ -19,7 +20,7 @@ local ActorCapture = [[
             DELETEMOB.Actors[#DELETEMOB.Actors + 1] = insance;
         end;
 
-        if #DELETEMOB.Actors <= 5 then
+        if #DELETEMOB.Actors >= 5 then
             Connection:Disconnect();
         end;
     end);
@@ -64,8 +65,8 @@ if not DELETEMOB.RunningESP then
     elseif run_on_actor and queue_on_teleport then
         if DELETEMOB and DELETEMOB.Actors then -- I Don't Trust Peoples getactos.
 
-            repeat task.wait() until #DELETEMOB.Actors == 5;
-
+            repeat task.wait() until #DELETEMOB.Actors >= 5;
+            warn("Loaded")
             for _,Actor in DELETEMOB.Actors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
@@ -78,7 +79,7 @@ if not DELETEMOB.RunningESP then
             end;
 
         else
-            queue_on_teleport(ActorCapture);
+            queue_on_teleport(ActorCapture .. [[repeat task.wait() until game:IsLoaded()]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
         end;
@@ -114,3 +115,4 @@ if not DELETEMOB.RunningESP then
         game:GetService("Players").LocalPlayer:Kick("Executor Is Not Supported End.");
     end;
 end;
+
