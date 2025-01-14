@@ -1,6 +1,116 @@
 -- I Made This Open Source For People To Learn Off.
-if not getgc then  -- Checks If The Executor Has The Required Functions For The Script.
+if not getgc or not getupvalue then  -- Checks If The Executor Has The Required Functions For The Script.
 	game:GetService("Players").localPlayer:kick("Executor Not Supported"); -- Kicks The Player If Not.
+end;
+getgenv().DELETEMOB = {RunningESP = false};
+
+local ExecutorName = identifyexecutor and string.lower(identifyexecutor()) or "unkown";
+local Script = [[repeat task.wait() until game:GetService("Workspace"):FindFirstChild("Players")]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
+local Success, Output = pcall(getfflag, "FFlagDebugRunParallelLuaOnMainThread");
+local DetectionBypass = [[
+
+    -- Need To Make.
+
+]];
+local ActorCapture = [[
+    getgenv().DELETEMOB.Actors = { };
+    local Connection;
+    Connection = game.DescendantAdded:Connect(function(insance)
+        if insance:IsA("Actor") then
+            DELETEMOB.Actors[#DELETEMOB.Actors + 1] = insance;
+        end;
+
+        if #DELETEMOB.Actors <= 5 then
+            Connection:Disconnect();
+        end;
+    end);
+]];
+
+-- // Actor Bypass
+if not DELETEMOB.RunningESP then
+    if Success and string.lower(tostring(Output)) == "true" then
+        loadstring(Script)();
+
+        DELETEMOB.RunningESP = true;
+    elseif string.match(ExecutorName, "awp1") then
+        for _,Actor in getactors() do
+            run_on_actor(Actor, [[
+                for _,v in getgc(true) do 
+                    if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                        ]] .. Script ..[[
+                        break;
+                    end;
+                end;
+            ]]);
+        end;
+
+        DELETEMOB.RunningESP = true;
+    elseif string.match(ExecutorName, "wave") then
+        run_on_actor(getdeletedactors()[1], Script)
+
+        DELETEMOB.RunningESP = true;
+    elseif string.match(ExecutorName, "nihon") then
+        for _, Actor in getactorthreads() do
+            run_on_thread(Actor, [[ 
+                for _,v in getgc(true) do 
+                    if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                        ]] .. Script ..[[
+                        break;
+                    end;
+                end;
+            ]]);
+        end;
+
+        DELETEMOB.RunningESP = true;
+    elseif run_on_actor and queue_on_teleport then
+        if DELETEMOB and DELETEMOB.Actors and #DELETEMOB.Actors ~= 0 then -- I Don't Trust Peoples getactos.
+            for _,Actor in DELETEMOB.Actors do
+                run_on_actor(Actor, [[
+                    for _,v in getgc(true) do 
+                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                            ]] .. Script ..[[
+                            break;
+                        end;
+                    end;
+                ]]);
+            end;
+
+        else
+            queue_on_teleport(ActorCapture);
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
+
+        end;
+
+        DELETEMOB.RunningESP = true;
+    elseif getfflag and setfflag and queue_on_teleport then
+        local Success, Output = pcall(getfflag, "RunParallelLuaOnMainThread");
+        if (Success and string.lower(tostring(Output)) == "true") then
+            loadstring(Script)();
+
+        else
+            if pcall(setfflag, "FFlagDebugRunParallelLuaOnMainThread", "True") then
+                queue_on_teleport(DetectionBypass .. "task.wait(5)" .. Script);
+                DELETEMOB.RunningESP = true;
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
+
+            elseif pcall(setfflag, "RunParallelLuaOnMainThread", "True") then -- Some Executors Just Fake It Or Something.
+                queue_on_teleport(DetectionBypass .. "task.wait(5)" .. Script);
+                DELETEMOB.RunningESP = true;
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
+
+            elseif pcall(setfflag, "RunParallelLuaOnMainThread", "true") then -- Got Me Tweaking.
+                queue_on_teleport(DetectionBypass .. "task.wait(5)" .. Script);
+                DELETEMOB.RunningESP = true;
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
+
+            end;
+        end;
+
+    end;
+
+    if not DELETEMOB.RunningESP then -- If This Shit Dosent Then U Got A Nigga Executor. 
+        game:GetService("Players").LocalPlayer:Kick("Executor Is Not Supported End.");
+    end;
 end;
 
 local ESP = { 
@@ -24,13 +134,25 @@ local ListYSize = 40;
 local Modules = { };
 do
 
-	for i,v in next, getgc(true) do 
-		if typeof(v) == "table" then
-			if rawget(v, "removeEntry") and rawget(v, "operateOnAllEntries") and rawget(v, "getEntry") then
-				Modules.ReplicationInterface = v; -- Where The Player Characters Are Held.
-			end;
-		end;
-	end;
+    local Shared;
+    for _,v in getgc(true) do 
+        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then -- My Executors getinfo is broken :broken_heart: 
+            Shared = v; -- Gets The Shared table (Most Free Executors Don't Have getrenv().shared)
+        end;
+    end;
+
+    local Cache;
+    xpcall(function()
+        Cache = debug.getupvalue(Shared.require, 1)._cache;
+    end, function()
+        LocalPlayer:Kick('Make Sure The Game Is Loaded Or Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True".');
+    end)
+
+    local function Require(Module)
+        return Cache[Module].module;
+    end; 
+
+    Modules.ReplicationInterface = Require("ReplicationInterface");
 
 end;
 
@@ -182,7 +304,7 @@ do
 		ESP:AddPlayer(Player, Entry);
 	end);
 	
-	Players.PlayerAdded:Connect(function(NewPlayer)
+	Players.PlayerAdded:Connect(function(NewPlayer) 
 		task.wait(2);
 		Modules.ReplicationInterface.operateOnAllEntries(function(Player, Entry) -- They Updated getEnty() I Don't Think It Returns Everything. - I Diden't Check.
 			if NewPlayer == Player then
@@ -227,8 +349,9 @@ do
 				Dragging = true;
 				StartPos = UserInputService:GetMouseLocation();
 			end
-			if Functions:IsMouseOver(Enable) then
-				if Enable.Color == Color3.fromRGB(2, 54, 8) then
+			if Functions:IsMouseOver(Enable) then 
+                setclipboard(Enable.Color)
+				if ESP.Enabled then
 					ESP.Enabled = false;
 					Enable.Color = Color3.fromRGB(52, 52, 52);
 				else
@@ -236,7 +359,7 @@ do
 					Enable.Color = Color3.fromRGB(2, 54, 8);
 				end;
 			elseif Functions:IsMouseOver(Box) then
-				if Box.Color == Color3.fromRGB(2, 54, 8) then
+				if ESP.Box then
 					ESP.Box = false;
 					Box.Color = Color3.fromRGB(52, 52, 52);
 				else
@@ -244,7 +367,7 @@ do
 					Box.Color = Color3.fromRGB(2, 54, 8);
 				end;
 			elseif Functions:IsMouseOver(Tracer) then
-				if Tracer.Color == Color3.fromRGB(2, 54, 8) then
+				if ESP.Tracer then
 					ESP.Tracer = false;
 					Tracer.Color = Color3.fromRGB(52, 52, 52);
 				else
@@ -252,7 +375,7 @@ do
 					Tracer.Color = Color3.fromRGB(2, 54, 8);
 				end;
 			elseif Functions:IsMouseOver(Name) then 
-				if Name.Color == Color3.fromRGB(2, 54, 8) then
+				if ESP.Name then
 					ESP.Name = false;
 					Name.Color = Color3.fromRGB(52, 52, 52);
 				else
@@ -260,7 +383,7 @@ do
 					Name.Color = Color3.fromRGB(2, 54, 8);
 				end;
 			elseif Functions:IsMouseOver(Health) then
-				if Health.Color == Color3.fromRGB(2, 54, 8) then
+				if ESP.Health then
 					ESP.Health = false;
 					Health.Color = Color3.fromRGB(52, 52, 52);
 				else
@@ -268,7 +391,7 @@ do
 					Health.Color = Color3.fromRGB(2, 54, 8);
 				end;
 			elseif Functions:IsMouseOver(Gun) then
-				if Gun.Color == Color3.fromRGB(2, 54, 8) then
+				if ESP.Gun then
 					ESP.Gun = false;
 					Gun.Color = Color3.fromRGB(52, 52, 52);
 				else
