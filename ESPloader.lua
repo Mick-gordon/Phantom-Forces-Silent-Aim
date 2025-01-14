@@ -63,8 +63,6 @@ if not DELETEMOB.RunningESP then
 
         DELETEMOB.RunningESP = true;
     elseif run_on_actor and queue_on_teleport then
-        repeat task.wait() until game:IsLoaded()
-
         if DELETEMOB and DELETEMOB.Actors then -- I Don't Trust Peoples getactos.
 
             repeat task.wait() until #DELETEMOB.Actors >= 5;
@@ -81,7 +79,7 @@ if not DELETEMOB.RunningESP then
             end;
 
         else
-            queue_on_teleport(ActorCapture .. [[repeat task.wait() until game:IsLoaded()]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
+            queue_on_teleport(ActorCapture .. [[repeat task.wait() until DELETEMOB and DELETEMOB.Actors]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
         end;
