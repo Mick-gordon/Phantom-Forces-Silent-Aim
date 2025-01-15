@@ -3,7 +3,7 @@ repeat task.wait() until game:IsLoaded()
 getgenv().DELETEMOB = {RunningESP = false};
 
 local ExecutorName = identifyexecutor and string.lower(identifyexecutor()) or "unkown";
-local Script = [[repeat task.wait() until game:IsLoaded(); task.wait(5)]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
+local Script = [[repeat task.wait() until game:IsLoaded(); task.wait(5) print("Executed")]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
 local Success, Output = pcall(getfflag, "FFlagDebugRunParallelLuaOnMainThread");
 local DetectionBypass = [[
 
@@ -61,7 +61,6 @@ if not DELETEMOB.RunningESP then
         DELETEMOB.RunningESP = true;
     elseif run_on_actor and queue_on_teleport then
         if CapturedActors then -- I Don't Trust Peoples getactos.
-
             repeat task.wait() until #CapturedActors >= 5;
 
             for _,Actor in CapturedActors do
@@ -82,12 +81,12 @@ if not DELETEMOB.RunningESP then
         end;
 
         DELETEMOB.RunningESP = true;
-    elseif getfflag and setfflag and queue_on_teleport then
+    elseif getfflag then
         local Success, Output = pcall(getfflag, "RunParallelLuaOnMainThread");
         if (Success and string.lower(tostring(Output)) == "true") then
             loadstring(Script)();
 
-        else
+        elseif queue_on_teleport and setfflag then
             if pcall(setfflag, "FFlagDebugRunParallelLuaOnMainThread", "True") then
                 queue_on_teleport(DetectionBypass .. "task.wait(5)" .. Script);
                 DELETEMOB.RunningESP = true;
