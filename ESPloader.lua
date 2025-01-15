@@ -13,8 +13,6 @@ local DetectionBypass = [[
 
 ]];
 local ActorCapture = [[
-    getgenv().CapturedActors = {};
-
     local Connection;
     Connection = game.DescendantAdded:Connect(function(insance)
         if insance:IsA("Actor") then
@@ -81,7 +79,7 @@ if not DELETEMOBESP then
             DELETEMOBESP = true;
 
         else
-            queue_on_teleport(ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
+            queue_on_teleport([[getgenv().CapturedActors = {};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
         end;
