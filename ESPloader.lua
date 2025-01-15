@@ -66,13 +66,14 @@ if not DELETEMOB.RunningESP then
             for _,Actor in CapturedActors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
-                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") and debug.getupvalue(Shared.require, 1) and debug.getupvalue(Shared.require, 1)._cache then 
                             ]] .. Script ..[[
                             break;
                         end;
                     end;
                 ]]);
             end;
+            DELETEMOB.RunningESP = true;
 
         else
             queue_on_teleport([[getgenv().CapturedActors = {};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
