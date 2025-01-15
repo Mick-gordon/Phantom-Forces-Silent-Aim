@@ -32,7 +32,7 @@ if not DELETEMOBESP then
         loadstring(Script)();
         DELETEMOBESP = true;
 
-    elseif string.match(ExecutorName, "awp") then
+    elseif string.match(ExecutorName, "awp1") then
         for _,Actor in getactors() do
             run_on_actor(Actor, [[
                 for _,v in getgc(true) do 
