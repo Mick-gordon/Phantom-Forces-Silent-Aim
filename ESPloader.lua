@@ -3,7 +3,7 @@ repeat task.wait() until game:IsLoaded()
 getgenv().DELETEMOB = {RunningESP = false};
 
 local ExecutorName = identifyexecutor and string.lower(identifyexecutor()) or "unkown";
-local Script = [[repeat task.wait() until game:IsLoaded(); task.wait(5) print("Executed")]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
+local Script = [[repeat task.wait() until game:IsLoaded(); task.wait(5);]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
 local Success, Output = pcall(getfflag, "FFlagDebugRunParallelLuaOnMainThread");
 local DetectionBypass = [[
 
@@ -33,7 +33,7 @@ if not DELETEMOB.RunningESP then
         for _,Actor in getactors() do
             run_on_actor(Actor, [[
                 for _,v in getgc(true) do 
-                    if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                    if type(func) == "function" and islclosure(func) and debug.getinfo(func).name == "require" and string.match(debug.getinfo(func).source, "ClientLoader") then
                         ]] .. Script ..[[
                         break;
                     end;
@@ -50,7 +50,7 @@ if not DELETEMOB.RunningESP then
         for _, Actor in getactorthreads() do
             run_on_thread(Actor, [[ 
                 for _,v in getgc(true) do 
-                    if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
+                    if type(func) == "function" and islclosure(func) and debug.getinfo(func).name == "require" and string.match(debug.getinfo(func).source, "ClientLoader") then
                         ]] .. Script ..[[
                         break;
                     end;
@@ -59,14 +59,14 @@ if not DELETEMOB.RunningESP then
         end;
 
         DELETEMOB.RunningESP = true;
-    elseif run_on_actor and queue_on_teleport then
+    elseif run_on_actor1 and queue_on_teleport then
         if CapturedActors then -- I Don't Trust Peoples getactos.
             repeat task.wait() until #CapturedActors >= 5;
             
             for _,Actor in CapturedActors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
-                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") and v.require and debug.getupvalues(v.require)[1] and debug.getupvalue(v.require, 1)._cache then 
+                        if type(func) == "function" and islclosure(func) and debug.getinfo(func).name == "require" and string.match(debug.getinfo(func).source, "ClientLoader") then
                             ]] .. Script ..[[
                             break;
                         end;
