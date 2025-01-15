@@ -62,19 +62,19 @@ if not DELETEMOB.RunningESP then
     elseif run_on_actor and queue_on_teleport then
         if CapturedActors then -- I Don't Trust Peoples getactos.
             repeat task.wait() until #CapturedActors >= 5;
-
+            
             for _,Actor in CapturedActors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
-                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") and v.require and debug.getupvalue(v.require, 1) and debug.getupvalue(v.require, 1)._cache then 
+                        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") and v.require and debug.getupvalues(v.require)[1] and debug.getupvalue(v.require, 1)._cache then 
                             ]] .. Script ..[[
                             break;
                         end;
                     end;
                 ]]);
             end;
+            
             DELETEMOB.RunningESP = true;
-
         else
             queue_on_teleport([[getgenv().CapturedActors = {};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
