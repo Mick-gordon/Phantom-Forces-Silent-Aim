@@ -1,7 +1,5 @@
 -- I Made This Open Source For People To Learn Off.
-if not getgc or not getupvalue then  -- Checks If The Executor Has The Required Functions For The Script.
-	game:GetService("Players").localPlayer:kick("Executor Not Supported"); -- Kicks The Player If Not.
-end;
+repeat task.wait() until game:IsLoaded()
 getgenv().DELETEMOB = {RunningESP = false};
 
 local ExecutorName = identifyexecutor and string.lower(identifyexecutor()) or "unkown";
@@ -13,7 +11,6 @@ local DetectionBypass = [[
 
 ]];
 local ActorCapture = [[
-    getgenv().DELETEMOB = {Actors = { }};
     local Connection;
     Connection = game.DescendantAdded:Connect(function(insance)
         if insance:IsA("Actor") then
@@ -79,7 +76,8 @@ if not DELETEMOB.RunningESP then
             end;
 
         else
-            queue_on_teleport(ActorCapture .. [[repeat task.wait() until DELETEMOB and DELETEMOB.Actors]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
+            warn("NIgGER")
+            queue_on_teleport([[getgenv().DELETEMOB = {Actors = { }};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
         end;
