@@ -3,7 +3,7 @@ repeat task.wait() until game:IsLoaded()
 getgenv().DELETEMOB = {RunningESP = false};
 
 local ExecutorName = identifyexecutor and string.lower(identifyexecutor()) or "unkown";
-local Script = [[repeat task.wait() until game:IsLoaded()]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
+local Script = [[repeat task.wait() until game:IsLoaded(); task.wait(5)]] .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESP.lua");
 local Success, Output = pcall(getfflag, "FFlagDebugRunParallelLuaOnMainThread");
 local DetectionBypass = [[
 
@@ -63,7 +63,7 @@ if not DELETEMOB.RunningESP then
         if CapturedActors then -- I Don't Trust Peoples getactos.
 
             repeat task.wait() until #CapturedActors >= 5;
-            print("Loaded")
+
             for _,Actor in CapturedActors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
@@ -76,7 +76,6 @@ if not DELETEMOB.RunningESP then
             end;
 
         else
-            warn("NIgGER")
             queue_on_teleport([[getgenv().CapturedActors = {};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
