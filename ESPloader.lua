@@ -14,10 +14,10 @@ local ActorCapture = [[
     local Connection;
     Connection = game.DescendantAdded:Connect(function(insance)
         if insance:IsA("Actor") then
-            DELETEMOB.Actors[#DELETEMOB.Actors + 1] = insance;
+            CapturedActors[#CapturedActors + 1] = insance;
         end;
 
-        if #DELETEMOB.Actors >= 5 then
+        if #CapturedActors >= 5 then
             Connection:Disconnect();
         end;
     end);
@@ -60,11 +60,11 @@ if not DELETEMOB.RunningESP then
 
         DELETEMOB.RunningESP = true;
     elseif run_on_actor and queue_on_teleport then
-        if DELETEMOB and DELETEMOB.Actors then -- I Don't Trust Peoples getactos.
+        if CapturedActors then -- I Don't Trust Peoples getactos.
 
-            repeat task.wait() until #DELETEMOB.Actors >= 5;
-            warn("Loaded")
-            for _,Actor in DELETEMOB.Actors do
+            repeat task.wait() until #CapturedActors >= 5;
+            print("Loaded")
+            for _,Actor in CapturedActors do
                 run_on_actor(Actor, [[
                     for _,v in getgc(true) do 
                         if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then 
@@ -77,7 +77,7 @@ if not DELETEMOB.RunningESP then
 
         else
             warn("NIgGER")
-            queue_on_teleport([[getgenv().DELETEMOB = {Actors = { }};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
+            queue_on_teleport([[getgenv().CapturedActors = {};]] .. ActorCapture .. game:HttpGet("https://raw.githubusercontent.com/Mick-gordon/Phantom-Forces-Silent-Aim/refs/heads/main/ESPloader.lua"));
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
 
         end;
