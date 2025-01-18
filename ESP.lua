@@ -240,7 +240,6 @@ do
 				StartPos = UserInputService:GetMouseLocation();
 			end
 			if Functions:IsMouseOver(Enable) then 
-                setclipboard(Enable.Color)
 				if ESP.Enabled then
 					ESP.Enabled = false;
 					Enable.Color = Color3.fromRGB(52, 52, 52);
