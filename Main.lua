@@ -1,7 +1,7 @@
 -- To Make This Work Open Blox Trap. Go In "Engine Settings" Scroll To The Bottom And Click On "Fast Flag Editor". 
 -- Click On "+ Add new" Then For The Name Put "FFlagDebugRunParallelLuaOnMainThread" Then For Value Do "True".
 
-if not debug.getupvalues or not debug.setstack or not debug.getstack or not getgc then -- Check If The Executor Is Supported 
+if not debug.getupvalue or not debug.setstack or not debug.getstack or (not getgc and not getrenv and not getrenv().shared) then -- Check If The Executor Is Supported 
     game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
 end;
 
@@ -23,20 +23,21 @@ local SilentAim = {
 -- // Modules 
 local Modules = { };
 do
-
-    local Shared;
-    for _,v in getgc(true) do 
-        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then -- My Executors getinfo is broken :broken_heart: 
-            Shared = v; -- Gets The Shared table (Most Free Executors Don't Have getrenv().shared)
+    local Cache;
+    if getrenv and getrenv().shared then 
+        Cache = debug.getupvalue(getrenv().shared.require, 1)._cache
+    elseif getgc then
+        for _, Func in getgc() do 
+            if typeof(Func) == "function" and debug.info(Func, "n") == "require" and string.match(debug.info(Func, "s"), "ClientLoader") then 
+                Cache = debug.getupvalue(Func, 1)._cache;
+                break;
+            end;
         end;
     end;
 
-    local Cache;
-    xpcall(function()
-        Cache = debug.getupvalue(Shared.require, 1)._cache;
-    end, function()
-        LocalPlayer:Kick('Make Sure The Game Is Loaded Or Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True".');
-    end)
+    if not cache then 
+        LocalPlayer:Kick('Make Sure The Game Is Loaded Or Your Executor Is Not Supported.');
+    end;
 
     local function Require(Module)
         return Cache[Module].module;
