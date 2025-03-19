@@ -35,7 +35,7 @@ do
         end;
     end;
 
-    if not cache then 
+    if not Cache then 
         LocalPlayer:Kick('Make Sure The Game Is Loaded Or Your Executor Is Not Supported.');
     end;
 
