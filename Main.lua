@@ -81,9 +81,9 @@ do
                 Closest = Magnitude;
                 HitPart = HitBox;
             end;
-		end);
+	end);
 
-		return HitPart;
+	return HitPart;
     end;
 
 
