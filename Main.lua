@@ -1,16 +1,16 @@
 -- To Make This Work Open Blox Trap. Go In "Engine Settings" Scroll To The Bottom And Click On "Fast Flag Editor". 
 -- Click On "+ Add new" Then For The Name Put "FFlagDebugRunParallelLuaOnMainThread" Then For Value Do "True".
 
-if not debug.getupvalue or not debug.setstack or not debug.getstack or (not getgc and not getrenv and not getrenv().shared) then -- Check If The Executor Is Supported 
-    game:GetService("Players").LocalPlayer:Kick("Executor Is Not Suported!");
-end;
-
 -- // Variables
 local Players = game:GetService("Players");
 local LocalPlayer = Players.LocalPlayer;
 local CurrentCamera = game:GetService("Workspace").CurrentCamera;
 local UserInputService = game:GetService("UserInputService");
 local RunService = game:GetService("RunService");
+
+if not debug.getupvalue or not debug.setstack or not debug.getstack or (not getgc and not getrenv and not getrenv().shared) then -- Check If The Executor Is Supported 
+    return LocalPlayer:Kick("Executor Is Not Suported!");
+end;
 
 -- // Tables
 local SilentAim = { 
@@ -60,30 +60,67 @@ do
     function Functions:GetClosestToMouse() -- Quick Little Get Closest To Mouse Function Nothing Special.
 		local Closest, HitPart = SilentAim.Fov, nil;
         
-		Modules.ReplicationInterface.operateOnAllEntries(function(Player, Entry)
-            if Player ~= LocalPlayer then
-				if Entry._alive and Player.Team ~= LocalPlayer.Team and Entry._thirdPersonObject and Entry._thirdPersonObject._characterModelHash then -- Check If They Are Alive And Have A Character
-					
-					local HitBox = Entry._thirdPersonObject._characterModelHash[SilentAim.HitScan];
-					if HitBox then
-						local ScreenPosition, OnScreen = CurrentCamera:WorldToViewportPoint(HitBox.Position); -- 3D To 2D
-						local Magnitude = (UserInputService:GetMouseLocation() - Vector2.new(ScreenPosition.X, ScreenPosition.Y)).Magnitude; -- The Distance Between Mouse And Player 2D Position.
-						if OnScreen and Magnitude < Closest then
-							Closest = Magnitude;
-							HitPart = HitBox;
-						end;
-					end;
-				end;
-			end;
+        Modules.ReplicationInterface.operateOnAllEntries(function(Player, Entry)
+            if Player == LocalPlayer or Player.Team == LocalPlayer.Team then
+                return;
+            end;
+
+			if not Entry._alive or not Entry._thirdPersonObject or not Entry._thirdPersonObject._characterModelHash then -- Check If They Are Alive And Have A Character
+                return;
+            end;
+
+            local HitBox = Entry._thirdPersonObject._characterModelHash[SilentAim.HitScan];
+            if not HitBox then
+                return;
+            end;
+
+            local ScreenPosition, OnScreen = CurrentCamera:WorldToViewportPoint(HitBox.Position); -- 3D To 2D
+            local Magnitude = (UserInputService:GetMouseLocation() - Vector2.new(ScreenPosition.X, ScreenPosition.Y)).Magnitude; -- The Distance Between Mouse And Player 2D Position.
+            
+            if OnScreen and Magnitude < Closest then
+                Closest = Magnitude;
+                HitPart = HitBox;
+            end;
 		end);
 
 		return HitPart;
     end;
 
+
+    function Functions:SolveQuadratic(A, B, C)
+        local Discriminant = B^2 - 4*A*C;
+        if Discriminant < 0 then
+            return nil, nil;
+        end;
+    
+        local DiscRoot = math.sqrt(Discriminant);
+        local Root1 = (-B - DiscRoot) / (2*A);
+        local Root2 = (-B + DiscRoot) / (2*A);
+    
+        return Root1, Root2;
+    end;
+    
+    function Functions:GetBallisticFlightTime(direction, gravity, projectileSpeed)
+        local Root1, Root2 = Functions:SolveQuadratic(
+            gravity:Dot(gravity) / 4,
+            gravity:Dot(direction) - projectileSpeed^2,
+            direction:Dot(direction)
+        );
+    
+        if Root1 and Root2 then
+            if Root1 > 0 and Root1 < Root2 then
+                return math.sqrt(Root1);
+            elseif Root2 > 0 and Root2 < Root1 then
+                return math.sqrt(Root2);
+            end;
+        end;
+    
+        return 0;
+    end;
+
     function Functions:CalCulateBulletDrop(To, From, MuzzleVelovity) -- I Have Added This As I Am Very Lazy On DELETEMOB V3(Sorry).
-        local Distance = (To - From).Magnitude;
-        local Time = Distance / MuzzleVelovity;
-        local Vertical = 0.5 * Modules.PublicSettings.bulletAcceleration * Time^2; -- kinematic Equation.
+        local Time = Functions:GetBallisticFlightTime(From - To, -Modules.PublicSettings.bulletAcceleration, MuzzleVelovity);
+        local Vertical = 0.5 * -Modules.PublicSettings.bulletAcceleration * Time^2; -- kinematic Equation.
         
         return Vertical; -- How Much Need To Be Compinsated For Bullet Drop.
     end;
@@ -94,7 +131,7 @@ end;
 -- // Hooks
 do
     -- Thanks mickeydev For Showing Me How To Use SetStack.
-    local OldBulletInterface = Modules.BulletInterface.newBullet; Modules.BulletInterface.newBullet = function(BulletData) -- Hooks The New Bullets I Am Not Using hookfunction As It Can Cry About To Many Upvalues.
+    local OldBulletInterface = Modules.BulletInterface.newBullet; Modules.BulletInterface.newBullet = function(BulletData) -- Hooks The New Bullets I Am Not Using hookfunction As It Can Cry About To Many Upvalues.   
 
         if BulletData.extra and SilentAim.Enabled then -- If LocalPlyer Is Sending It.
             local HitPart = Functions:GetClosestToMouse();
@@ -102,11 +139,11 @@ do
             if HitPart then
                 local BulletSpeed = BulletData.extra.firearmObject:getWeaponStat("bulletspeed");
                 local VerticalDrop = Functions:CalCulateBulletDrop(HitPart.Position, BulletData.position, BulletSpeed);
-                local LookVector = (HitPart.Position - VerticalDrop - BulletData.position).unit;
+                local LookVector = (HitPart.Position + VerticalDrop - BulletData.position).unit;
 
                 for i, v in debug.getstack(2) do -- https://www.lua.org/pil/24.2.html
                     if typeof(v) == "Vector3" and (BulletData.velocity.Unit - v).Magnitude < 0.1 then -- The Index Can Change.
-                        debug.setstack(2, i, LookVector); -- Changes A Local Variale, LookVector Inside The FirearmObject.
+                        debug.setstack(2, i, LookVector); -- Changes A Local Variale LookVector Inside The FirearmObject.
                         break;
                     end;
                 end;
