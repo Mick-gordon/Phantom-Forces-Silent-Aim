@@ -100,7 +100,7 @@ do
         return Root1, Root2;
     end;
     
-    function Functions:GetBallisticFlightTime(direction, gravity, projectileSpeed)
+    function Functions:GetBallisticFlightTime(direction, gravity, projectileSpeed) -- Stolen From Mickey
         local Root1, Root2 = Functions:SolveQuadratic(
             gravity:Dot(gravity) / 4,
             gravity:Dot(direction) - projectileSpeed^2,
