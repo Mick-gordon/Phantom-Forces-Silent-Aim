@@ -1,8 +1,4 @@
 -- I Made This Open Source For People To Learn Off.
-if not getgc or not getupvalue then  -- Checks If The Executor Has The Required Functions For The Script.
-	game:GetService("Players").localPlayer:kick("Executor Not Supported"); -- Kicks The Player If Not.
-end;
-
 local ESP = { 
 	Enabled = false,
 	Box = false,
@@ -20,23 +16,28 @@ local RunService = game:GetService("RunService");
 local Drawings = { };
 local ListYSize = 40;
 
+if not debug.getupvalue or not debug.setstack or not debug.getstack or (not getgc and not getrenv and not getrenv().shared) then -- Check If The Executor Is Supported 
+    return LocalPlayer:Kick("Executor Is Not Suported!");
+end;
+
 -- // Modules 
 local Modules = { };
 do
-
-    local Shared;
-    for _,v in getgc(true) do 
-        if typeof(v) == "table" and rawget(v, "require") and not rawget(v, "rawget") then -- My Executors getinfo is broken :broken_heart: 
-            Shared = v; -- Gets The Shared table (Most Free Executors Don't Have getrenv().shared)
+    local Cache;
+    if getrenv and getrenv().shared then 
+        Cache = debug.getupvalue(getrenv().shared.require, 1)._cache
+    elseif getgc then
+        for _, Func in getgc() do 
+            if typeof(Func) == "function" and debug.info(Func, "n") == "require" and string.match(debug.info(Func, "s"), "ClientLoader") then 
+                Cache = debug.getupvalue(Func, 1)._cache;
+                break;
+            end;
         end;
     end;
 
-    local Cache;
-    xpcall(function()
-        Cache = debug.getupvalue(Shared.require, 1)._cache;
-    end, function()
-        LocalPlayer:Kick('Make Sure The Game Is Loaded Or Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True".');
-    end)
+    if not Cache then 
+        return LocalPlayer:Kick('Make Sure The Game Is Loaded Or Your Executor Is Not Supported.');
+    end;
 
     local function Require(Module)
         return Cache[Module].module;
@@ -47,7 +48,7 @@ do
 end;
 
 if not Modules.ReplicationInterface then
-	LocalPlayer:Kick('Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True"');
+	return LocalPlayer:Kick('Check If You Have "FFlagDebugRunParallelLuaOnMainThread" "True"');
 end;
 
 --// Functions
